@@ -2,144 +2,245 @@
   "project_meta": {
     "app_name": "E-Coder",
     "full_title": "Design and Implementation of an Online Coding Learning Platform to Enhanced Computational Thinking in Children",
-    "version": "1.0.0-MVP",
+    "version": "1.1.0-Enhanced",
     "project_type": "University Final Year Capstone",
-    "target_audience": ["Primary School Students (Ages 6-12)", "Educators", "Administrators"],
+    "target_audience": {
+      "primary": "Primary School Students (Ages 6-12)",
+      "secondary": "Educators/Teachers",
+      "tertiary": "School Administrators"
+    },
     "license": "MIT",
-    "last_updated": "2025-12-02"
+    "last_updated": "2025-12-03",
+    "repository_url": "https://github.com/university-capstone/e-coder"
+  },
+
+  "pedagogical_objectives": {
+    "computational_thinking": [
+      "Decomposition: Breaking down complex problems into smaller steps",
+      "Pattern Recognition: Identifying trends in logic puzzles",
+      "Abstraction: Focusing on relevant information by filtering out details",
+      "Algorithm Design: Creating step-by-step instructions to solve problems"
+    ],
+    "learning_approach": "Constructionism (Learning by making/doing)",
+    "engagement_strategy": "Gamification (Badges, Progress Tracking, Visual Feedback)"
   },
 
   "system_architecture": {
     "pattern": "MVC (Model-View-Controller)",
     "entry_point": "public/index.php",
     "routing_strategy": "Front Controller via .htaccess rewrites",
-    "client_execution": "Client-Side Sandbox (JavaScript VM)",
+    "client_execution": "Client-Side Sandbox (JavaScript VM via Google Blockly)",
     "directory_structure": {
       "app": {
-        "controllers": "Handles logic and input sanitization",
-        "models": "Database interactions (PDO)",
-        "views": "HTML templates and UI fragments",
-        "core": "Base Controller, Database Connector, Router"
+        "controllers": "Handles request logic, input sanitization, and orchestrates models/views",
+        "models": "Data access layer using PDO for database interactions",
+        "views": "HTML templates (phtml/php) with reusable UI fragments",
+        "core": {
+          "App": "Main application bootstrap",
+          "Controller": "Base controller class",
+          "Database": "PDO Wrapper/Singleton",
+          "Router": "URL parsing and route dispatching"
+        }
       },
       "public": {
-        "assets": "CSS, Images, JSON Levels",
-        "js": "ecoder.js (Main Logic), Blockly Libraries, jQuery.min.js",
-        "index.php": "Application wrapper"
+        "assets": {
+          "css": "Custom styles and Bootstrap overrides",
+          "img": "Sprites, Icons, Backgrounds",
+          "json": "Level definitions and localized strings"
+        },
+        "js": {
+          "lib": "Third-party libraries (Blockly, jQuery, Bootstrap)",
+          "main.js": "Application entry point",
+          "ide.js": "Blockly integration and workspace management"
+        },
+        "index.php": "Application wrapper and autoloader init"
       },
-      "config": "Environment variables (DB credentials)"
+      "config": "Environment configuration (DB credentials, API keys)",
+      "tests": "PHPUnit test cases and Selenium/Playwright scripts"
     }
   },
 
   "tech_stack": {
     "frontend": {
-      "language": "HTML5, CSS3, JavaScript (ES6+)",
-      "dom_manipulation": "jQuery 3.7.1",
-      "ui_framework": "Bootstrap 5 (for rapid responsive layout)",
-      "coding_engine": "Google Blockly (Core library)"
+      "core": "HTML5, CSS3, JavaScript (ES6+)",
+      "dom_manipulation": "jQuery 3.7.1 (Legacy support/Ease of use)",
+      "ui_framework": "Bootstrap 5 (Responsive Layout, Accessibility)",
+      "coding_engine": "Google Blockly (Visual Programming Editor)",
+      "animations": "CSS3 Transitions + Canvas API"
     },
     "backend": {
       "language": "PHP 8.2+",
-      "style": "Object-Oriented (OOP) Vanilla PHP",
-      "server": "Apache (XAMPP/WAMP)"
+      "style": "Strict Typed Object-Oriented (OOP) PHP",
+      "server": "Apache 2.4+ (XAMPP/WAMP environment compatible)",
+      "composer": "Dependency Management (optional but recommended)"
     },
     "database": {
-      "engine": "MySQL / MariaDB",
-      "driver": "PDO (PHP Data Objects) for security"
+      "engine": "MySQL 8.0 / MariaDB 10.4+",
+      "driver": "PDO (PHP Data Objects) with Prepared Statements"
     },
-    "version_control": "Git"
+    "version_control": "Git",
+    "testing": {
+      "backend": "PHPUnit 9+",
+      "frontend": "Jest (for logic) / Selenium WebDriver (for E2E)"
+    }
   },
 
   "database_schema": {
     "tables": [
       {
         "table_name": "users",
+        "description": "Stores authentication and profile details for all roles.",
         "columns": [
-          "user_id (INT, PK, AI)",
-          "username (VARCHAR, UNIQUE)",
-          "password_hash (VARCHAR, 255)",
-          "email (VARCHAR)",
-          "role (ENUM: 'student', 'teacher', 'admin')",
-          "created_at (DATETIME)"
-        ]
+          { "name": "user_id", "type": "INT", "attributes": "PK, AI, UNSIGNED" },
+          { "name": "username", "type": "VARCHAR(50)", "attributes": "UNIQUE, NOT NULL" },
+          { "name": "password_hash", "type": "VARCHAR(255)", "attributes": "NOT NULL" },
+          { "name": "email", "type": "VARCHAR(100)", "attributes": "NOT NULL" },
+          { "name": "role", "type": "ENUM('student', 'teacher', 'admin')", "default": "'student'" },
+          { "name": "created_at", "type": "DATETIME", "default": "CURRENT_TIMESTAMP" },
+          { "name": "updated_at", "type": "DATETIME", "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" }
+        ],
+        "indexes": ["INDEX(role)", "INDEX(email)"]
       },
       {
         "table_name": "levels",
+        "description": "Defines the coding puzzles/challenges available.",
         "columns": [
-          "level_id (INT, PK, AI)",
-          "title (VARCHAR)",
-          "instructions (TEXT)",
-          "xml_toolbox (TEXT - Definition of available blocks)",
-          "required_logic (JSON - Logic validation rules)",
-          "difficulty (TINYINT)"
+          { "name": "level_id", "type": "INT", "attributes": "PK, AI, UNSIGNED" },
+          { "name": "title", "type": "VARCHAR(100)", "attributes": "NOT NULL" },
+          { "name": "instructions", "type": "TEXT", "attributes": "NOT NULL" },
+          { "name": "xml_toolbox", "type": "TEXT", "description": "XML definition of available blocks for this level" },
+          { "name": "required_logic", "type": "JSON", "description": "Validation rules for checking solution correctness" },
+          { "name": "difficulty", "type": "TINYINT", "attributes": "UNSIGNED", "range": "1-5" },
+          { "name": "order_index", "type": "INT", "attributes": "UNSIGNED", "description": "Sequence order of the level" }
         ]
       },
       {
         "table_name": "student_progress",
+        "description": "Tracks the state of a student's attempt at a level.",
         "columns": [
-          "progress_id (INT, PK, AI)",
-          "user_id (FK -> users.user_id)",
-          "level_id (FK -> levels.level_id)",
-          "status (ENUM: 'attempted', 'completed')",
-          "saved_code_xml (TEXT - Snapshot of their workspace)",
-          "completed_at (DATETIME)"
+          { "name": "progress_id", "type": "INT", "attributes": "PK, AI, UNSIGNED" },
+          { "name": "user_id", "type": "INT", "attributes": "FK -> users.user_id, NOT NULL" },
+          { "name": "level_id", "type": "INT", "attributes": "FK -> levels.level_id, NOT NULL" },
+          { "name": "status", "type": "ENUM('attempted', 'completed')", "default": "'attempted'" },
+          { "name": "saved_code_xml", "type": "TEXT", "description": "Snapshot of workspace" },
+          { "name": "attempts_count", "type": "INT", "default": "0" },
+          { "name": "completed_at", "type": "DATETIME", "nullable": true }
+        ],
+        "constraints": [
+          "UNIQUE(user_id, level_id)",
+          "FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE",
+          "FOREIGN KEY (level_id) REFERENCES levels(level_id) ON DELETE CASCADE"
         ]
       },
       {
         "table_name": "badges",
+        "description": "Achievements awarded to students.",
         "columns": [
-          "badge_id (INT, PK)",
-          "user_id (FK)",
-          "badge_name (VARCHAR)",
-          "awarded_on (DATE)"
+          { "name": "badge_id", "type": "INT", "attributes": "PK, AI, UNSIGNED" },
+          { "name": "name", "type": "VARCHAR(50)", "attributes": "NOT NULL" },
+          { "name": "description", "type": "VARCHAR(255)" },
+          { "name": "icon_url", "type": "VARCHAR(255)" },
+          { "name": "criteria_json", "type": "JSON", "description": "Logic to trigger badge award" }
+        ]
+      },
+      {
+        "table_name": "user_badges",
+        "description": "Mapping of badges earned by users.",
+        "columns": [
+          { "name": "user_badge_id", "type": "INT", "attributes": "PK, AI, UNSIGNED" },
+          { "name": "user_id", "type": "INT", "attributes": "FK -> users.user_id" },
+          { "name": "badge_id", "type": "INT", "attributes": "FK -> badges.badge_id" },
+          { "name": "awarded_at", "type": "DATETIME", "default": "CURRENT_TIMESTAMP" }
         ]
       }
     ]
   },
 
-  "features": {
-    "authentication": {
-      "security_measures": ["CSRF Token validation", "Password Hashing (Bcrypt)", "Session Regeneration"],
-      "roles": {
-         "student": "Play levels, View Own Profile",
-         "teacher": "View All Students, Add Levels, Export CSV"
-      }
-    },
-    "ide_interface": {
-      "left_panel": "Blockly Workspace (Drag & Drop)",
-      "right_panel": "Live Code Verification (JS Output)",
-      "actions": ["Run Code", "Reset Workspace", "Save Progress"]
-    },
-    "logic_engine": {
-      "type": "Step-Interpreter",
-      "features": ["Infinite Loop Protection", "Syntax Highlighting", "Visual Feedback (Sprite Movement)"]
+  "ui_ux_guidelines": {
+    "target_demographic": "Children (6-12 years)",
+    "design_principles": [
+      { "principle": "Clarity", "guideline": "Use large text, simple vocabulary, and clear icons." },
+      { "principle": "Feedback", "guideline": "Immediate visual or audio feedback for every interaction (click, drag, run)." },
+      { "principle": "Forgiveness", "guideline": "Easy 'Undo' functionality and non-punitive error messages." },
+      { "principle": "Engagement", "guideline": "Bright, contrasting colors. Gamified elements like stars/confetti on success." }
+    ],
+    "accessibility": {
+      "standard": "WCAG 2.1 AA",
+      "requirements": [
+        "Keyboard navigation support for Blockly (using keyboard plugins)",
+        "Screen reader compatibility for instructions",
+        "High contrast mode toggle"
+      ]
     }
   },
 
-  "api_routes_internal": [
-    { "route": "/user/login", "method": "POST", "controller": "AuthController", "action": "login" },
-    { "route": "/user/register", "method": "POST", "controller": "AuthController", "action": "register" },
-    { "route": "/level/load/{id}", "method": "GET", "controller": "LevelController", "action": "getPayload" },
-    { "route": "/progress/submit", "method": "POST", "controller": "GameController", "action": "validateAndSave" },
-    { "route": "/admin/dashboard", "method": "GET", "controller": "AdminController", "action": "index" }
-  ],
-
-  "final_checklist": {
-    "security": [
-      { "item": "Prevent SQL Injection", "status": "Use PDO Prepared Statements everywhere" },
-      { "item": "Prevent XSS", "status": "Use htmlspecialchars() on all user outputs" },
-      { "item": "Passwords", "status": "Verify `password_hash()` is implemented" },
-      { "item": "Access Control", "status": "Ensure students cannot access `/admin` via URL manipulation" }
-    ],
-    "functionality": [
-      { "item": "Blockly Load", "status": "Ensure toolbox XML loads correctly on slow connections" },
-      { "item": "Save State", "status": "Verify reloading the page keeps the blocks in place" },
-      { "item": "Level Completion", "status": "Database successfully records `is_completed: 1`" },
-      { "item": "Responsive UI", "status": "Test on Mobile View (Chrome DevTools)" }
-    ],
-    "documentation": [
-      { "item": "Code Comments", "status": "Comment every function in standard PHPDoc format" },
-      { "item": "Installation Guide", "status": "Write `READ_ME.txt` steps for XAMPP import" },
-      { "item": "Screenshots", "status": "Capture high-res workflows for the Thesis Report" }
+  "api_specification": {
+    "base_url": "/api/v1",
+    "notes": "All API responses return JSON. Errors follow standard HTTP status codes.",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "description": "Authenticates a user and starts a session.",
+        "request_body": { "username": "string", "password": "string" },
+        "response_success": { "status": 200, "data": { "user_id": 1, "role": "student", "csrf_token": "abc..." } },
+        "response_error": { "status": 401, "message": "Invalid credentials" }
+      },
+      {
+        "method": "POST",
+        "path": "/auth/register",
+        "description": "Registers a new user.",
+        "request_body": { "username": "string", "password": "string", "email": "string", "role": "string (optional)" },
+        "response_success": { "status": 201, "message": "User created" }
+      },
+      {
+        "method": "GET",
+        "path": "/levels/{id}",
+        "description": "Fetches level configuration and toolbox.",
+        "parameters": [ { "name": "id", "in": "path", "type": "integer", "required": true } ],
+        "response_success": { "status": 200, "data": { "level_id": 1, "title": "Loop the Loop", "xml_toolbox": "..." } }
+      },
+      {
+        "method": "POST",
+        "path": "/progress/save",
+        "description": "Saves the current workspace state or submits for validation.",
+        "request_body": { "level_id": 1, "xml_code": "...", "status": "attempted|completed" },
+        "response_success": { "status": 200, "message": "Progress saved" }
+      }
     ]
+  },
+
+  "testing_strategy": {
+    "unit_testing": {
+      "scope": "Backend Models & Helpers",
+      "tools": "PHPUnit",
+      "coverage_target": "80%"
+    },
+    "integration_testing": {
+      "scope": "API Endpoints & Database interactions",
+      "tools": "Postman / PHPUnit"
+    },
+    "frontend_testing": {
+      "scope": "Blockly interactions and UI rendering",
+      "tools": "Manual Testing (Primary), Selenium (Secondary for critical flows)"
+    },
+    "user_acceptance_testing": {
+      "audience": "Small group of students (n=5) and teachers (n=2)",
+      "method": "Observation sessions and feedback surveys"
+    }
+  },
+
+  "deployment_and_security": {
+    "security_measures": [
+      "CSRF Protection on all forms/AJAX requests",
+      "Input validation (Sanitization & Validation filters)",
+      "PDO Prepared Statements for all SQL queries",
+      "X-Frame-Options: DENY (to prevent clickjacking)",
+      "Content Security Policy (CSP) headers"
+    ],
+    "environment_requirements": {
+      "php_extensions": ["pdo_mysql", "json", "mbstring", "xml"],
+      "apache_modules": ["mod_rewrite", "mod_headers"]
+    }
   }
 }
